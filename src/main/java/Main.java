@@ -19,30 +19,35 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.WindowConstants;
 
+import org.json.JSONObject;
+
 import main.java.io.ReadFile;
 import main.java.io.WriteFile;
+import main.java.objects.Planner;
 import main.java.objects.Recipe;
 import main.java.objects.ShoppingList;
 
 public class Main extends JFrame {
 	/**
-	 * 
+	 * TODO:
+	 * implement calendar
+	 * append vs integrate shopping list item
+	 * aesthetics
 	 */
 	private static final long serialVersionUID = 1L;
 
 	static JFrame frame;
 	static JPanel newPanel;
+	static Planner recipePlan;
 	static boolean recipeDelete = false;
 	static boolean getRecipePlan = false;
-	static String[] recipePlan = new String[] {"", "", "", "", "", "", ""};
-	static String[] days = new String[] {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
 	static int dayIndex = -1;
 	static LinkedList<Integer> lastInt;
 	static LinkedList<String> lastItem;
 	static ShoppingList list;
 
 	public static void main(String[] args) {
-		recipePlan = ReadFile.getRecipePlannerData();
+		recipePlan = new Planner();
 		frame = new JFrame();
 
 		newPanel = new JPanel(new GridLayout(2, 1, 0, 0));
@@ -76,6 +81,7 @@ public class Main extends JFrame {
 		JButton recipeB = new JButton("Recipes");
 		recipeB.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				getRecipePlan = false;
 				recipePerformed();
 			}
 		});
@@ -112,7 +118,7 @@ public class Main extends JFrame {
 		JPanel plannerPanel = new JPanel();
 		plannerPanel.setLayout(new GridLayout(7, 1, 0, 0));
 		
-		JButton monday = new JButton("Monday: " + recipePlan[0]);
+		JButton monday = new JButton(recipePlan.getEntry(0));
 		monday.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dayIndex = 0;
@@ -123,7 +129,7 @@ public class Main extends JFrame {
 		monday.setVisible(true);
 		plannerPanel.add(monday);
 		
-		JButton tuesday = new JButton("Tuesday: " + recipePlan[1]);
+		JButton tuesday = new JButton(recipePlan.getEntry(1));
 		tuesday.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dayIndex = 1;
@@ -134,7 +140,7 @@ public class Main extends JFrame {
 		tuesday.setVisible(true);
 		plannerPanel.add(tuesday);
 		
-		JButton wednesday = new JButton("Wednesday: " + recipePlan[2]);
+		JButton wednesday = new JButton(recipePlan.getEntry(2));
 		wednesday.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dayIndex = 2;
@@ -145,7 +151,7 @@ public class Main extends JFrame {
 		wednesday.setVisible(true);
 		plannerPanel.add(wednesday);
 		
-		JButton thursday = new JButton("Thursday: " + recipePlan[3]);
+		JButton thursday = new JButton(recipePlan.getEntry(3));
 		thursday.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dayIndex = 3;
@@ -156,7 +162,7 @@ public class Main extends JFrame {
 		thursday.setVisible(true);
 		plannerPanel.add(thursday);
 		
-		JButton friday = new JButton("Friday: " + recipePlan[4]);
+		JButton friday = new JButton(recipePlan.getEntry(4));
 		friday.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dayIndex = 4;
@@ -167,7 +173,7 @@ public class Main extends JFrame {
 		friday.setVisible(true);
 		plannerPanel.add(friday);
 		
-		JButton saturday = new JButton("Sunday: " + recipePlan[5]);
+		JButton saturday = new JButton(recipePlan.getEntry(5));
 		saturday.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dayIndex = 5;
@@ -178,7 +184,7 @@ public class Main extends JFrame {
 		saturday.setVisible(true);
 		plannerPanel.add(saturday);
 		
-		JButton sunday = new JButton("Sunday: " + recipePlan[6]);
+		JButton sunday = new JButton(recipePlan.getEntry(6));
 		sunday.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dayIndex = 6;
@@ -214,8 +220,7 @@ public class Main extends JFrame {
 			JButton planRecipe = new JButton("Not Cooking");
 			planRecipe.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					recipePlan[dayIndex] = "";
-					WriteFile.writeRecipesList(recipePlan);
+					recipePlan.clearEntry(dayIndex);
 					plannerPerformed();
 				}
 			});
@@ -226,23 +231,17 @@ public class Main extends JFrame {
 		
 		for (int i = 0; i < savedRecipes.length; i++) {
 			JButton temp = new JButton(savedRecipes[i].replace("_", " "));
-			@SuppressWarnings("unused")
-			String title = savedRecipes[i].replace("_", " ");
+			final String title = savedRecipes[i];
 			temp.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if (recipeDelete) {
-						for (int i = 0; i < recipePlan.length; i++) {
-							if (recipePlan[i].replace(" ", "_").equals(title)) {
-								recipePlan[i] = "";
-							}
-						}
-						
-						WriteFile.deleteRecipe(title.replace(" ", "_"));
+						recipePlan.deleteRecipe(title.replace("_", " "));
+						WriteFile.deleteRecipe(title);
 						recipeDelete = false;
 						recipePerformed();
 					} 
 					else {
-						showRecipe(title.replace(" ", "_"));
+						showRecipe(title);
 					}
 				}
 			});
@@ -341,7 +340,7 @@ public class Main extends JFrame {
 		JScrollPane scrollPane1 = new JScrollPane(recipeArea); 
 		recipeArea.setLineWrap(true);
 		recipeArea.setWrapStyleWord(true);
-		recipeArea.append(ReadFile.getRecipeText(title));
+		recipeArea.append(new JSONObject(ReadFile.getText("recipes/" + title)).getString("fulltext"));
 		recipeArea.setEditable(false);
 		newPanel.add(scrollPane1);
 		
@@ -358,11 +357,10 @@ public class Main extends JFrame {
 		buttonPan.add(done);
 		
 		if (getRecipePlan) {
-			JButton planRecipe = new JButton("Plan for " + days[dayIndex]);
+			JButton planRecipe = new JButton("Plan for " + recipePlan.getDay(dayIndex));
 			planRecipe.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					recipePlan[dayIndex] = title.replace(" ", "_");
-					WriteFile.writeRecipesList(recipePlan);
+					recipePlan.setEntry(dayIndex, title.replace(" ", "_"));
 					plannerPerformed();
 				}
 			});
@@ -376,7 +374,7 @@ public class Main extends JFrame {
 		list = new ShoppingList(recipePlan);
 		lastInt = new LinkedList<Integer>();
 		lastItem = new LinkedList<String>();
-		performList(ShoppingList.getList());
+		performList(ShoppingList.getComplexList());
 	}
 	
 	public static void performList(LinkedList<String> list) {
@@ -458,7 +456,7 @@ public class Main extends JFrame {
 				if (ingredientsArea.getText().length() > 1) {
 					ShoppingList.addItems(ingredientsArea.getText().split("\n"));
 				}
-				performList(ShoppingList.getList());
+				performList(ShoppingList.getComplexList());
 			}
 		});
 		itemadd.setMinimumSize(new Dimension(300, 40));

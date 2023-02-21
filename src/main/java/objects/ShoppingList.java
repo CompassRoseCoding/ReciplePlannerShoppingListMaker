@@ -1,6 +1,9 @@
 package main.java.objects;
 
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.Comparator;
+import java.util.HashMap;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -9,56 +12,88 @@ import main.java.io.ReadFile;
 
 public class ShoppingList {
 	static String ingredientsPath = "src/main/data/recipes/";
-	
-	static JSONArray jsonList;
-	static LinkedList<String> list;
 
-	public ShoppingList(String[] recipes) {
-		jsonList = new JSONArray();
+	static HashMap<String, JSONObject> list;
+
+	static ConversionMatrix converter;
+
+	public ShoppingList(Planner plan) {
+		list = new HashMap<String, JSONObject>();
+		converter = new ConversionMatrix();
+
+		String[] recipes = plan.getPlans();
+
 		for (int i = 0; i < recipes.length; i++) {
 			if (recipes[i].length() > 0) {
-				JSONObject recipe = ReadFile.getRecipeJSON(recipes[i]);
-				JSONArray ingredients = (JSONArray)(recipe.get("ingredients"));
+				JSONObject recipe = new JSONObject(ReadFile.getText("recipes/" + recipes[i]));
+				JSONArray ingredients = (JSONArray) (recipe.get("ingredients"));
 				for (int j = 0; j < ingredients.length(); j++) {
 					addJSONItem((JSONObject) ingredients.get(j));
 				}
 			}
 		}
 	}
-	
+
 	public static void addJSONItem(JSONObject ingredient) {
-		jsonList.put(ingredient);
-	}
-	
-	public static void addItem(String list) {
-
-	}
-	
-	public static void addJSONItem(String list) {
-
-	}
-
-	public static void addItems(String[] list) {
-
-	}
-	
-	public static LinkedList<String> getList() {
-		list = new LinkedList<String>();
-		for (int i = 0; i < jsonList.length(); i++) {
-			JSONObject ingredient = (JSONObject) jsonList.get(i);
-			if (ingredient.has("quantity") && ingredient.has("measure") && ingredient.has("modifier")) {
-				list.add(ingredient.getDouble("quantity") + " " + ingredient.getString("measure") + ingredient.getString("modifier"));
-			}
-			else if (ingredient.has("quantity") && ingredient.has("modifier")) {
-				list.add(ingredient.getDouble("quantity") + " " + ingredient.getString("modifier"));
-			}
-			else if (ingredient.has("measure") && ingredient.has("modifier")) {
-				list.add(ingredient.getDouble("measure") + ingredient.getString("modifier"));
-			}
-			else {
-				list.add("" + ingredient);
+		for (Map.Entry<String, JSONObject> set : list.entrySet()) {
+			if (ingredient.getString("keyword").contains(set.getValue().getString("keyword"))
+					|| set.getValue().getString("keyword").contains(ingredient.getString("keyword"))) {
+				ingredient = converter.mergeIngredients(ingredient, set.getValue());
 			}
 		}
-		return list;
+		list.put(ingredient.getString("keyword"), ingredient);
 	}
+
+	public static void addItems(String[] items) {
+		for (int i = 0; i < items.length; i++) {
+			Ingredient item = new Ingredient(items[i], converter);
+			list.put(item.getIngredient().getString("keyword"), item.getIngredient());
+		}
+	}
+
+	public static LinkedList<String> getSimpleList() {
+		LinkedList<String> newlist = new LinkedList<String>();
+		for (Map.Entry<String, JSONObject> set : list.entrySet()) {
+
+			newlist.add(set.getValue().getString("displayword"));
+		}
+
+		newlist.sort(new ShoppingListComparator());
+		return newlist;
+	}
+
+	public static LinkedList<String> getComplexList() {
+		LinkedList<String> newlist = new LinkedList<String>();
+		for (Map.Entry<String, JSONObject> set : list.entrySet()) {
+			newlist.add(set.getValue().get("quantity") + " " + set.getValue().getString("measure") + "\t"
+					+ set.getValue().getString("displayword").toLowerCase());
+		}
+
+		newlist.sort(new ComplexListComparator());
+		return newlist;
+	}
+}
+
+/**
+ * 
+ * @author Hannah
+ *	a short comparator class to sort the list
+ */
+class ShoppingListComparator implements Comparator<String> {
+    @Override
+    public int compare(String s1, String s2) {
+        return s1.compareTo(s2);
+    }
+}
+
+/**
+ * 
+ * @author Hannah
+ *	a short comparator class to sort the list
+ */
+class ComplexListComparator implements Comparator<String> {
+    @Override
+    public int compare(String s1, String s2) {
+        return s1.split("\t")[1].compareTo(s2.split("\t")[1]);
+    }
 }

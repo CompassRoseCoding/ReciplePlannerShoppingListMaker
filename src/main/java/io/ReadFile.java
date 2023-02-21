@@ -7,8 +7,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
-import org.json.JSONObject;
-
 public class ReadFile {
 	static String dataPath = "src/main/data/";
 
@@ -29,7 +27,7 @@ public class ReadFile {
 			int i = 0;
 			while (inpt != null && i < returnArr.length) {
 				if (inpt.length() > 0 && inpt.charAt(0) != ' ') {
-					returnArr[i] = inpt;
+					returnArr[i] = inpt.replace("\n", "");
 				}
 				i++;
 				inpt = reader.readLine();
@@ -58,35 +56,17 @@ public class ReadFile {
 		}
 	}
 
-	public static String getRecipeText(String title) {
-		String recipeJSON = "";
+	public static String getText(String title) {
+		String returnText = "";
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader(dataPath + "recipes/" + title + ".txt"));
-			recipeJSON = reader.lines().collect(Collectors.joining(System.lineSeparator()));
+			BufferedReader reader = new BufferedReader(new FileReader(dataPath + title + ".txt"));
+			returnText = reader.lines().collect(Collectors.joining(System.lineSeparator()));
 			reader.close();
 		} catch (FileNotFoundException e) {
-			recipeJSON = "{\"fulltext\": \"Error, file " + dataPath + "recipes/" + title + ".txt" + " not found.\"}";
+			returnText = "{\"fulltext\": \"Error, file " + dataPath + title + ".txt" + " not found.\"}";
 		} catch (IOException e) {
-			recipeJSON = "{\"fulltext\": \"Error, file corrupted\"}";
+			returnText = "{\"fulltext\": \"Error, file corrupted\"}";
 		}
-		JSONObject json = new JSONObject(recipeJSON);
-		System.out.println(json);
-		String recipeText = json.getString("fulltext");
-		return recipeText;
-	}
-	
-	public static JSONObject getRecipeJSON(String title) {
-		String recipeJSON = "";
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(dataPath + "recipes/" + title + ".txt"));
-			recipeJSON = reader.lines().collect(Collectors.joining(System.lineSeparator()));
-			reader.close();
-		} catch (FileNotFoundException e) {
-			recipeJSON = "{\"fulltext\": \"Error, file " + dataPath + "recipes/" + title + ".txt" + " not found.\"}";
-		} catch (IOException e) {
-			recipeJSON = "{\"fulltext\": \"Error, file corrupted\"}";
-		}
-		JSONObject json = new JSONObject(recipeJSON);
-		return json;
+		return returnText;
 	}
 }
