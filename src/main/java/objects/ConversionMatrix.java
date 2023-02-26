@@ -58,9 +58,35 @@ public class ConversionMatrix {
 			i2.put("quantity", newAmt);
 			return i2;
 		} else {
-			double newAmt = i2.getDouble("quantity") + i1.getDouble("quantity");
-			i1.put("quantity", newAmt);
-			return i1;
+			try {
+				double newAmt = i2.getDouble("quantity") + i1.getDouble("quantity");
+				i1.put("quantity", newAmt);
+				return i1;
+			}
+			catch (org.json.JSONException e) {
+				double q1;
+				try {
+					q1 = Double.parseDouble((String) i2.get("quantity"));
+				}
+				catch (java.lang.NumberFormatException e1) {
+					q1 = 0;
+				}
+				
+				double q2;
+				try {
+					q2 = Double.parseDouble((String) i2.get("quantity"));
+				}
+				catch (java.lang.NumberFormatException e2) {
+					q2 = 0;
+				}
+				double newAmt = q1 + q2;
+				if (newAmt > 0) 
+					i1.put("quantity", newAmt);
+				else 
+					i1.put("quantity", "");
+				return i1;
+			}
+				
 		}
 	}
 
@@ -70,10 +96,14 @@ public class ConversionMatrix {
 		return list.get(meas).getString(key);
 	}
 	
-	// Abbreviations are far from standard for recipes
-	// This attempts to put them all into one form
+	// Try to get the numerical value of a measure
 	public double getDouble(String meas, String key) {
-		return list.get(meas).getDouble(key);
+		try {
+			return list.get(meas).getDouble(key);
+		}
+		catch (java.lang.NullPointerException e) {
+			return 1.0;
+		}
 	}
 	
 	public boolean isNumeric(String s) {

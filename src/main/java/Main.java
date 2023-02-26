@@ -1,65 +1,41 @@
 package main.java;
 
-import java.awt.Color;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
 import java.util.LinkedList;
 
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.WindowConstants;
 
-import org.json.JSONObject;
-
-import main.java.io.ReadFile;
-import main.java.io.WriteFile;
-import main.java.objects.Planner;
-import main.java.objects.Recipe;
 import main.java.objects.ShoppingList;
+import main.java.ui.*;
 
 public class Main extends JFrame {
 	/**
-	 * TODO:
-	 * implement calendar
-	 * append vs integrate shopping list item
-	 * aesthetics
+	 * TODO: 
+	 * redo the checkmark/undo function
+	 * TODO: implement calendar append vs integrate shopping list item aesthetics
+	 * edit recipes
 	 */
 	private static final long serialVersionUID = 1L;
 
-	static JFrame frame;
-	static JPanel newPanel;
-	static Planner recipePlan;
-	static boolean recipeDelete = false;
-	static boolean getRecipePlan = false;
-	static int dayIndex = -1;
 	static LinkedList<Integer> lastInt;
 	static LinkedList<String> lastItem;
-	static ShoppingList list;
+	
+	static JFrame frame;
+	static JPanel panel;
 
 	public static void main(String[] args) {
-		recipePlan = new Planner();
 		frame = new JFrame();
-
-		newPanel = new JPanel(new GridLayout(2, 1, 0, 0));
+		panel = new JPanel();
 
 		int minWidth = 300;
 		int minHeight = 500;
-		newPanel.setMinimumSize(new Dimension(minWidth, minHeight));
-		newPanel.setMaximumSize(new Dimension(minWidth, minHeight));
 		frame.setMinimumSize(new Dimension(minWidth, minHeight));
+		panel.setMinimumSize(new Dimension(minWidth, minHeight));
 
-		mainMenu(); 
-		
 		// Set frame in center of screen
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		int x = (dim.width - minWidth) / 2;
@@ -67,401 +43,94 @@ public class Main extends JFrame {
 		frame.setLocation(x, y);
 
 		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-
-		frame.add(newPanel);
-
+		
+		frame.add(panel);
+		frame.validate();
+		
+		panel.setLayout(new BorderLayout());
+		
+		mainMenuPanel();
+	}
+	
+	public static void mainMenuPanel() {
+		refresh();
+		panel.add(new MainMenuPanel(), BorderLayout.CENTER);
 		frame.setVisible(true);
 	}
 	
-	public static void mainMenu() {
-		panelRepaint();
-		
-		newPanel.setLayout(new GridLayout(3, 1, 0, 0));
-		
-		JButton recipeB = new JButton("Recipes");
-		recipeB.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				getRecipePlan = false;
-				recipePerformed();
-			}
-		});
-		newPanel.add(recipeB);
-
-		JButton plannerB = new JButton("Planner");
-		plannerB.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				plannerPerformed();
-			}
-		});
-		newPanel.add(plannerB);
-		
-		JButton listB = new JButton("Shopping List");
-		listB.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				showShoppingList();
-			}
-		});
-		newPanel.add(listB);
-	}
-
-	public static void panelRepaint() {
-		newPanel.removeAll();
-        newPanel.revalidate();
-        newPanel.repaint();
-	}
-
-	public static void plannerPerformed() {
-		panelRepaint();
-		
-		newPanel.setLayout(new BoxLayout(newPanel, BoxLayout.PAGE_AXIS));
-		
-		JPanel plannerPanel = new JPanel();
-		plannerPanel.setLayout(new GridLayout(7, 1, 0, 0));
-		
-		JButton monday = new JButton(recipePlan.getEntry(0));
-		monday.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				dayIndex = 0;
-				getRecipePlan = true;
-				recipePerformed();
-			}
-		});
-		monday.setVisible(true);
-		plannerPanel.add(monday);
-		
-		JButton tuesday = new JButton(recipePlan.getEntry(1));
-		tuesday.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				dayIndex = 1;
-				getRecipePlan = true;
-				recipePerformed();
-			}
-		});
-		tuesday.setVisible(true);
-		plannerPanel.add(tuesday);
-		
-		JButton wednesday = new JButton(recipePlan.getEntry(2));
-		wednesday.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				dayIndex = 2;
-				getRecipePlan = true;
-				recipePerformed();
-			}
-		});
-		wednesday.setVisible(true);
-		plannerPanel.add(wednesday);
-		
-		JButton thursday = new JButton(recipePlan.getEntry(3));
-		thursday.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				dayIndex = 3;
-				getRecipePlan = true;
-				recipePerformed();
-			}
-		});
-		thursday.setVisible(true);
-		plannerPanel.add(thursday);
-		
-		JButton friday = new JButton(recipePlan.getEntry(4));
-		friday.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				dayIndex = 4;
-				getRecipePlan = true;
-				recipePerformed();
-			}
-		});
-		friday.setVisible(true);
-		plannerPanel.add(friday);
-		
-		JButton saturday = new JButton(recipePlan.getEntry(5));
-		saturday.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				dayIndex = 5;
-				getRecipePlan = true;
-				recipePerformed();
-			}
-		});
-		saturday.setVisible(true);
-		plannerPanel.add(saturday);
-		
-		JButton sunday = new JButton(recipePlan.getEntry(6));
-		sunday.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				dayIndex = 6;
-				getRecipePlan = true;
-				recipePerformed();
-			}
-		});
-		sunday.setVisible(true);
-		plannerPanel.add(sunday);
-		
-		newPanel.add(plannerPanel);
-		
-		JButton mainmenu = new JButton("Main Menu");
-		mainmenu.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				mainMenu();
-			}
-		});
-		mainmenu.setMinimumSize(new Dimension(300, 40));
-		newPanel.add(mainmenu);
+	public static void recipeListPanel() {
+		refresh();
+		panel.add(new RecipeListPanel(false, 0));
+		frame.setVisible(true);
 	}
 	
-	public static void recipePerformed() {
-		panelRepaint();
+	public static void plannerPanel() {
+		refresh();
+		panel.add(new PlannerPanel());
+		frame.setVisible(true);
+	}
 
-		newPanel.setLayout(new BoxLayout(newPanel, BoxLayout.PAGE_AXIS));
-		
-		JPanel listPanel = new JPanel(new GridLayout(7, 1, 0, 0));
-		listPanel.setMinimumSize(new Dimension(300, 500));
-		listPanel.setMaximumSize(new Dimension(300, 500));
-		
-		if (getRecipePlan) {
-			JButton planRecipe = new JButton("Not Cooking");
-			planRecipe.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					recipePlan.clearEntry(dayIndex);
-					plannerPerformed();
-				}
-			});
-			listPanel.add(planRecipe);
-		}
-		
-		String[] savedRecipes = ReadFile.getArchivedRecipes();
-		
-		for (int i = 0; i < savedRecipes.length; i++) {
-			JButton temp = new JButton(savedRecipes[i].replace("_", " "));
-			final String title = savedRecipes[i];
-			temp.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					if (recipeDelete) {
-						recipePlan.deleteRecipe(title.replace("_", " "));
-						WriteFile.deleteRecipe(title);
-						recipeDelete = false;
-						recipePerformed();
-					} 
-					else {
-						showRecipe(title);
-					}
-				}
-			});
-			if (recipeDelete) {
-				temp.setBackground(Color.RED);
-			}
-			temp.setMinimumSize(new Dimension(300, 40));
-			listPanel.add(temp);
-		}
-		
-	    JScrollPane scrollPane = new JScrollPane(listPanel);
-	    newPanel.add(scrollPane);
-	    
-	    JPanel container = new JPanel();
-	    container.setLayout(new GridLayout(1, 3, 0, 0));
-	    
-	    JButton mainmenu = new JButton("Menu");
-		mainmenu.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				mainMenu();
-			}
-		});
-		mainmenu.setMinimumSize(new Dimension(100, 40));
-		container.add(mainmenu);
-		
-		JButton addrecipe = new JButton("Add New");
-		addrecipe.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				addRecipe();
-			}
-		});
-		addrecipe.setMinimumSize(new Dimension(100, 40));
-		container.add(addrecipe);
-		
-		JButton deleterecipe = new JButton("Delete");
-		deleterecipe.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				recipeDelete = !recipeDelete;
-				recipePerformed();
-			}
-		});
-		deleterecipe.setMinimumSize(new Dimension(100, 40));
-		container.add(deleterecipe);
-		
-		container.setMaximumSize(new Dimension(300, 40));
-		newPanel.add(container);
+	public static void addRecipePanel() {
+		refresh();
+		panel.add(new AddRecipePanel());
+		frame.setVisible(true);
+	}
+
+	public static void readRecipePanel(String title) {
+		refresh();
+		panel.add(new ReadRecipePanel(title, false, -1));
+		frame.setVisible(true);
 	}
 	
-	public static void addRecipe() {
-		panelRepaint();
-		
-		newPanel.setLayout(new BoxLayout(newPanel, BoxLayout.PAGE_AXIS));
-		
-		JLabel titleLabel = new JLabel("Title of Recipe:");
-		newPanel.add(titleLabel);
-		
-		JTextField titleField = new JTextField(50);
-		titleField.setMinimumSize(new Dimension(300, 50));
-		titleField.setMaximumSize(new Dimension(300, 50));
-		newPanel.add(titleField);
-		
-		JLabel ingredientsLabel = new JLabel("Ingredients for Recipe:");
-		newPanel.add(ingredientsLabel);
-		
-		JTextArea ingredientsArea = new JTextArea(5, 20);
-		JScrollPane scrollPane1 = new JScrollPane(ingredientsArea); 
-		ingredientsArea.setEditable(true);
-		newPanel.add(scrollPane1);
-		
-		JLabel stepsLabel = new JLabel("Steps of Recipe:");
-		newPanel.add(stepsLabel);
-		
-		JTextArea stepsArea = new JTextArea(5, 20);
-		JScrollPane scrollPane2 = new JScrollPane(stepsArea); 
-		ingredientsArea.setEditable(true);
-		newPanel.add(scrollPane2);
-		
-		JButton submitrecipe = new JButton("");
-		submitrecipe.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				new Recipe(titleField.getText(), ingredientsArea.getText(), stepsArea.getText());
-				recipePerformed();
-			}
-		});
-		submitrecipe.setMinimumSize(new Dimension(300, 40));
-		submitrecipe.add(new JLabel("Submit Recipe"));
-		submitrecipe.setVisible(true);
-		newPanel.add(submitrecipe);
+	public static void recipeListPlanPanel(int index) {
+		refresh();
+		refresh();
+		panel.add(new RecipeListPanel(true, index));
+		frame.setVisible(true);
 	}
 	
-	public static void showRecipe(String title) {
-		panelRepaint();
-		newPanel.setLayout(new BoxLayout(newPanel, BoxLayout.PAGE_AXIS));
-		
-		JTextArea recipeArea = new JTextArea(5, 20);
-		JScrollPane scrollPane1 = new JScrollPane(recipeArea); 
-		recipeArea.setLineWrap(true);
-		recipeArea.setWrapStyleWord(true);
-		recipeArea.append(new JSONObject(ReadFile.getText("recipes/" + title)).getString("fulltext"));
-		recipeArea.setEditable(false);
-		newPanel.add(scrollPane1);
-		
-		JPanel buttonPan = new JPanel();
-		buttonPan.setMaximumSize(new Dimension(300, 40));
-		
-		JButton done = new JButton("Done");
-		done.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Main.recipePerformed();
-			}
-		});
-		done.setMinimumSize(new Dimension(300, 40));
-		buttonPan.add(done);
-		
-		if (getRecipePlan) {
-			JButton planRecipe = new JButton("Plan for " + recipePlan.getDay(dayIndex));
-			planRecipe.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					recipePlan.setEntry(dayIndex, title.replace(" ", "_"));
-					plannerPerformed();
-				}
-			});
-			buttonPan.setMinimumSize(new Dimension(300, 40));
-			buttonPan.add(planRecipe);
-		}
-		newPanel.add(buttonPan);
+	public static void planRecipePanel(String title, int index) {
+		refresh();
+		refresh();
+		panel.add(new ReadRecipePanel(title, true, index));
+		frame.setVisible(true);
 	}
 	
-	public static void showShoppingList() {
-		list = new ShoppingList(recipePlan);
+	public static void shoppingListPanel() {
 		lastInt = new LinkedList<Integer>();
 		lastItem = new LinkedList<String>();
-		performList(ShoppingList.getComplexList());
+		refresh();
+		ShoppingList mylist = new ShoppingList();
+		panel.add(new ShoppingListPanel(mylist.getComplexList()));
+		frame.setVisible(true);
+	}
+
+	public static void existingListPanel(LinkedList<String> grocerylist) {
+		lastInt = new LinkedList<Integer>();
+		lastItem = new LinkedList<String>();
+		refresh();
+		panel.add(new ShoppingListPanel(grocerylist));
+		frame.setVisible(true);
 	}
 	
-	public static void performList(LinkedList<String> list) {
-		panelRepaint();
-		newPanel.setLayout(new BoxLayout(newPanel, BoxLayout.PAGE_AXIS));
-		
-		JPanel listPan = new JPanel();
-		listPan.setLayout(new BoxLayout(listPan, BoxLayout.PAGE_AXIS));
-		
-		JScrollPane scrollPane = new JScrollPane(listPan, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		
-		for (int i = 0; i < list.size(); i++) {
-			JCheckBox temp = new JCheckBox(list.get(i));
-			int index = i;
-			temp.addActionListener(new java.awt.event.ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					lastInt.add(index);
-					lastItem.add(list.remove(index));
-					performList(list);
-				}
-			});
-			listPan.add(temp);
-		}
-		
-		newPanel.add(scrollPane);
-		
-		JPanel buttonPan = new JPanel();
-		buttonPan.setMaximumSize(new Dimension(300, 40));
-		
-		JButton done = new JButton("Done");
-		done.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Main.mainMenu();
-			}
-		});
-		done.setMinimumSize(new Dimension(300, 40));
-		buttonPan.add(done);
-		
-		JButton undo = new JButton("Undo");
-		undo.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (lastInt.size() > 0 && lastItem.size() > 0 ) {
-					list.add(lastInt.removeLast(), lastItem.removeLast());
-					performList(list);
-				}
-			}
-		});
-		undo.setMinimumSize(new Dimension(300, 40));
-		buttonPan.add(undo);
-		
-		JButton addItem = new JButton("Add Item");
-		addItem.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				addItem(list);
-			}
-		});
-		addItem.setMinimumSize(new Dimension(300, 40));
-		buttonPan.add(addItem);
-		
-		newPanel.add(buttonPan);
+	public static void existingListPanel(LinkedList<String> grocerylist, LinkedList<String> removals) {
+		lastInt = new LinkedList<Integer>();
+		lastItem = new LinkedList<String>();
+		refresh();
+		panel.add(new ShoppingListPanel(grocerylist, removals));
+		frame.setVisible(true);
+	}
+
+	
+	public static void addIngredientPanel(LinkedList<String> list) {
+		refresh();
+		panel.add(new AddIngredientPanel());
+		frame.setVisible(true);
 	}
 	
-	public static void addItem(LinkedList<String> list) {
-		panelRepaint();
-		
-		newPanel.setLayout(new BoxLayout(newPanel, BoxLayout.PAGE_AXIS));
-		
-		JLabel ingredientsLabel = new JLabel("Items to add:");
-		newPanel.add(ingredientsLabel);
-		
-		JTextArea ingredientsArea = new JTextArea(5, 20);
-		JScrollPane scrollPane1 = new JScrollPane(ingredientsArea); 
-		ingredientsArea.setEditable(true);
-		newPanel.add(scrollPane1);
-		
-		JButton itemadd = new JButton("");
-		itemadd.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (ingredientsArea.getText().length() > 1) {
-					ShoppingList.addItems(ingredientsArea.getText().split("\n"));
-				}
-				performList(ShoppingList.getComplexList());
-			}
-		});
-		itemadd.setMinimumSize(new Dimension(300, 40));
-		itemadd.add(new JLabel("Add Items"));
-		itemadd.setVisible(true);
-		newPanel.add(itemadd);
+	public static void refresh() {
+		panel.removeAll();
+		panel.revalidate();
+		panel.repaint();
 	}
 }

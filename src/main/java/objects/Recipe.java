@@ -29,6 +29,7 @@ public class Recipe {
 		ConversionMatrix converter = new ConversionMatrix();
 		
 		for (int i = 0; i < ingList.length; i++) {
+			System.out.println(ingList[i]);
 			Ingredient item = new Ingredient(ingList[i], converter);
 			ings.put(item.getIngredient());
 		}

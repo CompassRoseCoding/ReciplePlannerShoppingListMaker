@@ -13,14 +13,15 @@ import main.java.io.ReadFile;
 public class ShoppingList {
 	static String ingredientsPath = "src/main/data/recipes/";
 
-	static HashMap<String, JSONObject> list;
+	HashMap<String, JSONObject> list;
 
 	static ConversionMatrix converter;
 
-	public ShoppingList(Planner plan) {
+	public ShoppingList() {
 		list = new HashMap<String, JSONObject>();
 		converter = new ConversionMatrix();
 
+		Planner plan = new Planner();
 		String[] recipes = plan.getPlans();
 
 		for (int i = 0; i < recipes.length; i++) {
@@ -34,7 +35,7 @@ public class ShoppingList {
 		}
 	}
 
-	public static void addJSONItem(JSONObject ingredient) {
+	public void addJSONItem(JSONObject ingredient) {
 		for (Map.Entry<String, JSONObject> set : list.entrySet()) {
 			if (ingredient.getString("keyword").contains(set.getValue().getString("keyword"))
 					|| set.getValue().getString("keyword").contains(ingredient.getString("keyword"))) {
@@ -44,14 +45,15 @@ public class ShoppingList {
 		list.put(ingredient.getString("keyword"), ingredient);
 	}
 
-	public static void addItems(String[] items) {
+	public LinkedList<String> addItems(String[] items) {
 		for (int i = 0; i < items.length; i++) {
 			Ingredient item = new Ingredient(items[i], converter);
 			list.put(item.getIngredient().getString("keyword"), item.getIngredient());
 		}
+		return getComplexList();
 	}
 
-	public static LinkedList<String> getSimpleList() {
+	public LinkedList<String> getSimpleList() {
 		LinkedList<String> newlist = new LinkedList<String>();
 		for (Map.Entry<String, JSONObject> set : list.entrySet()) {
 
@@ -62,7 +64,7 @@ public class ShoppingList {
 		return newlist;
 	}
 
-	public static LinkedList<String> getComplexList() {
+	public LinkedList<String> getComplexList() {
 		LinkedList<String> newlist = new LinkedList<String>();
 		for (Map.Entry<String, JSONObject> set : list.entrySet()) {
 			newlist.add(set.getValue().get("quantity") + " " + set.getValue().getString("measure") + "\t"
